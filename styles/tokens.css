@@ -1,0 +1,71 @@
+/* SmartOps Design Tokens — Light + Dark Ready */
+:root {
+  /* Surfaces */
+  --bg-base: #F4F7FB;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --bg-header: #0E1A2E;
+  --bg-tinted-blue: #DBEAFE;
+  --bg-tinted-amber: #FEF3C7;
+  --bg-tinted-success: #ECFDF5;
+  --bg-tinted-info: #EFF6FF;
+
+  /* Brand */
+  --brand-primary: #FFB020;
+  --brand-primary-pressed: #E69900;
+  --brand-accent: #E94E1B;
+  --brand-success: #16A34A;
+  --brand-success-strong: #15803D;
+  --brand-info: #2563EB;
+  --brand-info-strong: #1E40AF;
+  --brand-purple: #7C3AED;
+
+  /* Text */
+  --text-on-primary: #0F1B2D;
+  --text-on-success: #FFFFFF;
+  --text-on-header: #FFFFFF;
+  --text-on-header-muted: #B6C2D6;
+  --text-primary: #0F1B2D;
+  --text-secondary: #475569;
+  --text-tertiary: #94A3B8;
+  --text-link: #1E40AF;
+
+  /* Borders */
+  --border-subtle: #E2E8F0;
+  --border-default: #CBD5E1;
+  --border-success: #A7F3D0;
+
+  /* Stripe colors (category accents) */
+  --stripe-blue: #2563EB;
+  --stripe-purple: #7C3AED;
+  --stripe-yellow: #FFB020;
+  --stripe-orange: #E94E1B;
+  --stripe-gray: #94A3B8;
+
+  /* Chat */
+  --chat-user-bg: #1E40AF;
+  --chat-user-text: #F0F4FF;
+  --chat-agent-bg: #FFFFFF;
+  --chat-agent-text: #0F1B2D;
+  --chat-system-bg: #F1F5F9;
+  --chat-system-border: #94A3B8;
+  --chat-system-text: #475569;
+  --chat-time: #94A3B8;
+  --chat-time-on-user: #B6C7E8;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(15,27,45,.06), 0 1px 3px rgba(15,27,45,.04);
+  --shadow-md: 0 4px 12px rgba(15,27,45,.08), 0 2px 4px rgba(15,27,45,.04);
+  --shadow-header: 0 4px 16px rgba(14,26,46,.18);
+
+  /* Radius */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 999px;
+
+  /* Type */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+}

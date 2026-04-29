@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartOps · Onaylı Ekranlar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 20% 0%, #EAF1FB 0%, transparent 60%),
+        radial-gradient(900px 500px at 100% 100%, #F4ECFB 0%, transparent 60%),
+        #ECEFF4;
+      min-height: 100vh;
+      color: #0F1B2D;
+      padding: 56px 32px;
+      -webkit-font-smoothing: antialiased;
+    }
+    header {
+      max-width: 960px;
+      margin: 0 auto 40px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #475569;
+      font-size: 14.5px;
+      max-width: 560px;
+      line-height: 1.55;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ECFDF5;
+      color: #15803D;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #A7F3D0;
+      margin-bottom: 16px;
+    }
+    .badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #16A34A;
+    }
+    .grid {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow:
+        0 1px 2px rgba(15,27,45,.06),
+        0 4px 16px rgba(15,27,45,.06);
+      padding: 20px 20px 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+      border: 1px solid #E2E8F0;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 10px 24px rgba(15,27,45,.10),
+        0 4px 8px rgba(15,27,45,.04);
+    }
+    .preview {
+      aspect-ratio: 393 / 540;
+      border-radius: 12px;
+      background: #0E1A2E;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview iframe {
+      width: 393px;
+      height: 852px;
+      border: 0;
+      transform: scale(0.55);
+      transform-origin: center center;
+      pointer-events: none;
+      background: #fff;
+    }
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .num {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94A3B8;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .open {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1E40AF;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    footer {
+      max-width: 960px;
+      margin: 56px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid #E2E8F0;
+      font-size: 12px;
+      color: #94A3B8;
+    }
+
+    /* Section heading */
+    .section-heading {
+      max-width: 960px;
+      margin: 56px auto 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section-heading h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .section-heading .hint {
+      font-size: 12.5px;
+      color: #64748B;
+    }
+
+    /* Flow card list */
+    .flows-grid {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .flow-card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow:
+        0 1px 2px rgba(15,27,45,.06),
+        0 4px 16px rgba(15,27,45,.06);
+      padding: 22px 22px 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 180ms ease-out, box-shadow 180ms ease-out;
+      border: 1px solid #E2E8F0;
+      border-left: 4px solid #FFB020;
+    }
+    .flow-card:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 10px 24px rgba(15,27,45,.10),
+        0 4px 8px rgba(15,27,45,.04);
+    }
+    .flow-card .flow-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #92400E;
+      background: #FFFBEB;
+      padding: 3px 8px;
+      border-radius: 999px;
+      width: max-content;
+    }
+    .flow-card .flow-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .flow-card .flow-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .flow-card .flow-thumbs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .flow-card .thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #F1F5F9;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748B;
+      font-family: ui-monospace, monospace;
+    }
+    .flow-card .thumb.connector {
+      width: 12px;
+      background: transparent;
+      color: #FFB020;
+    }
+    .flow-card .flow-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px solid #F1F5F9;
+      font-size: 12px;
+      color: #64748B;
+    }
+    .flow-card .flow-meta .open {
+      color: #92400E;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="badge">Onaylı</span>
+    <h1>SmartOps · Revize Edilmiş Ekranlar</h1>
+    <p class="subtitle">Müşteri geri bildirimleri doğrultusunda yeniden tasarlanan ekranlar. Her kart önizleme gösterir; tıklayarak tam boyutlu sürümü açabilirsin.</p>
+  </header>
+
+  <!-- Akışlar -->
+  <div class="section-heading">
+    <h2>Akışlar</h2>
+    <span class="hint">Tıklayın → akıştaki ekranlar yan yana açılır</span>
+  </div>
+
+  <div class="flows-grid">
+    <a class="flow-card" href="flows/live-chat-1.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 01</span>
+      <div class="flow-title">Live Chat — 1. Yol</div>
+      <div class="flow-desc">Uçuşla ilgili destek talebi → uçuş seçimi → konu açıklaması → canlı agent ile görüşme → ticket oluşturma.</div>
+      <div class="flow-meta">
+        <span>6 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/live-chat-2-extended.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 02</span>
+      <div class="flow-title">Live Chat — Detaylı Akış</div>
+      <div class="flow-desc">Request Assistance + bölümlü uçuş + tarih + modal onay + canlı agent görüşme.</div>
+      <div class="flow-meta">
+        <span>9 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/roster-leave.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 03</span>
+      <div class="flow-title">Roster Request — Leave</div>
+      <div class="flow-desc">İzin talebi: kategori → uçuş → tarih → roster türü → form → başarı.</div>
+      <div class="flow-meta">
+        <span>7 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/other-multinet.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 04</span>
+      <div class="flow-title">Other Requests — Multinet</div>
+      <div class="flow-desc">Multinet talebi: kategori → alt-kategori → form → başarı.</div>
+      <div class="flow-meta">
+        <span>5 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/other-flight-ops-admin.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 05</span>
+      <div class="flow-title">Other — Flight Ops Admin</div>
+      <div class="flow-desc">3 seviyeli kategorizasyon — kategori → ana → alt → form → başarı.</div>
+      <div class="flow-meta">
+        <span>6 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/bot-chat-flow.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 06</span>
+      <div class="flow-title">Bot Chat</div>
+      <div class="flow-desc">Otomatik bot ile konuşma → "What went wrong?" → ticket oluşturma.</div>
+      <div class="flow-meta">
+        <span>5 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/tickets-flow.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 07</span>
+      <div class="flow-title">My Tickets</div>
+      <div class="flow-desc">Mevcut destek taleplerini görüntüleme, detay, Reopen.</div>
+      <div class="flow-meta">
+        <span>3 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+
+    <a class="flow-card" href="flows/previous-chats-flow.html" target="_blank" rel="noopener">
+      <span class="flow-badge">Akış · 08</span>
+      <div class="flow-title">Previous Chats</div>
+      <div class="flow-desc">Geçmiş canlı sohbetler ve bot sohbetlerinin listesi.</div>
+      <div class="flow-meta">
+        <span>3 ekran · sıralı akış</span>
+        <span class="open">Akışı aç →</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Ekranlar (tüm onaylı ekranlar) -->
+  <div class="section-heading">
+    <h2>Ekranlar</h2>
+    <span class="hint">Bireysel ekran önizlemeleri</span>
+  </div>
+  <div class="grid">
+    <a class="card" href="01-home.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="01-home.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">01</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Home</div>
+      <div class="desc">Ana menü — brand-tinted dark header, sarı/yeşil CTA'lar, renkli şeritli liste kartları.</div>
+    </a>
+
+    <a class="card" href="02-select-flight.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="02-select-flight.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">02</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Select Available Flight</div>
+      <div class="desc">Uçuş seçim — vuesax uçak ikonu, SAW→SAW route, mavi saatler, sarı seçili satır, Continue CTA.</div>
+    </a>
+
+    <a class="card" href="03-entry-details.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="03-entry-details.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">03</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Entry Details</div>
+      <div class="desc">Sorun/talep formu — minimal yapı, açıklama textarea + 0/250 sayaç, disabled→primary CTA geçişi.</div>
+    </a>
+
+    <a class="card" href="04-live-chat-waiting.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="04-live-chat-waiting.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">04</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Live Chat — Waiting</div>
+      <div class="desc">Agent beklenirken — krem kullanıcı baloncuğu, pulse animasyonlu "Connecting…" chip, sarı send butonu.</div>
+    </a>
+
+    <a class="card" href="05-live-chat-active.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="05-live-chat-active.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">05</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Live Chat — Active</div>
+      <div class="desc">Aktif görüşme — krem (kullanıcı) ve açık mavi (agent) baloncuklar, navy text, Today separator.</div>
+    </a>
+
+    <a class="card" href="06-live-chat-closed.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="06-live-chat-closed.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">06</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Live Chat — Closed</div>
+      <div class="desc">Kapanmış chat — Jira link + ticket number kartı, input bar yok.</div>
+    </a>
+
+    <a class="card" href="07-request-assistance.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="07-request-assistance.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">07</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Request an Assistance</div>
+      <div class="desc">Talep türü seçim — sarı tinted helper, renkli sol şeritli kartlar (Roster / Policies / Other).</div>
+    </a>
+
+    <a class="card" href="08-roster-requests.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="08-roster-requests.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">08</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Roster Requests</div>
+      <div class="desc">Roster konu seçim — Leave / Duty Change / Efatur / Gendec, aynı pattern.</div>
+    </a>
+
+    <a class="card" href="09-previous-live-chats.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="09-previous-live-chats.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">09</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Previous Live Chats</div>
+      <div class="desc">Geçmiş chatler — search, All/Unread tabs, status badge'li liste, unread'ler sarı vurgulu.</div>
+    </a>
+
+    <a class="card" href="10-my-support-requests.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="10-my-support-requests.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">10</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">My Support Requests</div>
+      <div class="desc">Ticket listesi — kategori başlığı, status badge'i, ticket no/tarih/oluşturan, Show Details CTA.</div>
+    </a>
+
+    <a class="card" href="11-my-support-request-detail.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="11-my-support-request-detail.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">11</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">My Support — Detail</div>
+      <div class="desc">Tek ticket detayı — bilgi tablosu, Selected Flights, sarı "Reopen the Ticket", Comments baloncukları.</div>
+    </a>
+
+    <a class="card" href="12-bot-chat.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="12-bot-chat.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">12</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Bot Chat</div>
+      <div class="desc">Bot ile konuşma — mor agent baloncuğu, kırmızı End Chat, "Bot" mor label.</div>
+    </a>
+
+    <a class="card" href="13-other-requests.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="13-other-requests.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">13</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Other Requests</div>
+      <div class="desc">Diğer talep kategorileri — IT / Multinet / Meal / HR / Flight Ops Admin / Other, 6 renkli şerit.</div>
+    </a>
+
+    <a class="card" href="14-form-multinet.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="14-form-multinet.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">14</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Multinet (Form)</div>
+      <div class="desc">Detail textarea (0/250) + Attachment upload + disabled→primary Send Request CTA.</div>
+    </a>
+
+    <a class="card" href="15-form-leave.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="15-form-leave.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">15</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Leave (Form)</div>
+      <div class="desc">Aynı form pattern'ı — izin (Leave) talepleri için.</div>
+    </a>
+
+    <a class="card" href="16-sub-category-list.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="16-sub-category-list.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">16</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Sub-category List</div>
+      <div class="desc">Flight Ops Admin alt kategorileri — Lorem 1–6, 6 renkli şerit.</div>
+    </a>
+
+    <a class="card" href="17-success.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="17-success.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">17</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Success</div>
+      <div class="desc">Başarı modalı — yeşil checkmark + "Go to Support Request Page" CTA.</div>
+    </a>
+
+    <a class="card" href="18-previous-bot-chats.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="18-previous-bot-chats.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">18</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Previous Bot Chats</div>
+      <div class="desc">Bot sohbet geçmişi — aynı pattern, "Bot:" prefix'li.</div>
+    </a>
+
+    <a class="card" href="19-my-team-requests.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="19-my-team-requests.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">19</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">My Team Requests</div>
+      <div class="desc">Takım üyelerinin destek talepleri — aynı pattern, "Team" başlığıyla.</div>
+    </a>
+
+    <a class="card" href="20-modal-live-chat-confirm.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="20-modal-live-chat-confirm.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">20</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Modal · Live Chat?</div>
+      <div class="desc">Onay modalı — "Would you like to interact in the live chat?" Yes/No.</div>
+    </a>
+
+    <a class="card" href="21-modal-issue-detail.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="21-modal-issue-detail.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">21</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Modal · Issue Detail</div>
+      <div class="desc">Konu modalı — textarea + "Submit & Start Chat" + Cancel.</div>
+    </a>
+
+    <a class="card" href="22-modal-bot-close.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="22-modal-bot-close.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">22</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Modal · Bot Close</div>
+      <div class="desc">Bot kapanış modalı — "Create Ticket" / "Close Chat" seçimleri.</div>
+    </a>
+
+    <a class="card" href="23-modal-bot-error.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="23-modal-bot-error.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">23</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Modal · Bot Error</div>
+      <div class="desc">"What went wrong?" — açıklama textarea + Submit/Cancel.</div>
+    </a>
+
+    <a class="card" href="24-select-flight-sectioned.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="24-select-flight-sectioned.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">24</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Select Flight (Sectioned)</div>
+      <div class="desc">Bölümlü uçuş seçimi — Departing Soon / Upcoming / Future + Date Selection picker.</div>
+    </a>
+
+    <a class="card" href="25-select-dates.html" target="_blank" rel="noopener">
+      <div class="preview"><iframe src="25-select-dates.html" loading="lazy"></iframe></div>
+      <div class="meta">
+        <span class="num">25</span>
+        <span class="open">Aç →</span>
+      </div>
+      <div class="title">Select Dates</div>
+      <div class="desc">Takvim — date range picker, sarı seçim aralığı, Select CTA.</div>
+    </a>
+  </div>
+
+  <footer>
+    SmartOps Design Revision · Inter font · WCAG AA contrast · 393×852 (iPhone 14)
+  </footer>
+</body>
+</html>

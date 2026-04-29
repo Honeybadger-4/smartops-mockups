@@ -1,0 +1,132 @@
+/* iPhone frame + base layout */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+/* Native app — hide ALL scrollbars in mockups (force) */
+*, *::before, *::after { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.iphone::-webkit-scrollbar,
+.screen::-webkit-scrollbar,
+.content::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; background: transparent !important; }
+body {
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(1200px 600px at 20% 0%, #EAF1FB 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 100%, #F4ECFB 0%, transparent 60%),
+    #ECEFF4;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 64px;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.page-title {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.iphone {
+  width: 393px;
+  height: 852px;
+  background: #000;
+  border-radius: 54px;
+  padding: 12px;
+  box-shadow:
+    0 0 0 2px #1c1c1e,
+    0 30px 80px -20px rgba(15,27,45,.35),
+    0 10px 30px -10px rgba(15,27,45,.25);
+  position: relative;
+  overflow: hidden;
+}
+.iphone::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 32px;
+  background: #000;
+  border-radius: 999px;
+  z-index: 30;
+  pointer-events: none;
+}
+.screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-base);
+  border-radius: 42px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* iOS status bar */
+.status-bar {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px 0 36px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  z-index: 5;
+  flex-shrink: 0;
+}
+.status-bar.on-dark { color: #fff; }
+.status-bar .right { display: flex; gap: 6px; align-items: center; }
+.status-bar .icons { display: inline-flex; gap: 4px; align-items: center; }
+
+/* Bottom home indicator */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(15,27,45,0.85);
+  z-index: 25;
+}
+.home-indicator.on-light { background: rgba(15,27,45,0.85); }
+.home-indicator.on-dark { background: rgba(255,255,255,0.85); }
+
+/* Generic page wrapper inside screen */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Stage layout for multi-screen comparison */
+.stage {
+  display: flex;
+  gap: 48px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+.stage figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.stage figcaption {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

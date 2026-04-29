@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartOps · Modal · Bot Close Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/tokens.css?v=3" />
+  <link rel="stylesheet" href="styles/frame.css?v=3" />
+  <style>
+    .screen { background: #EEF2F7; }
+    .status-bar { background: var(--bg-surface); }
+    .app-bar {
+      background: var(--bg-surface);
+      padding: 4px 16px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative; z-index: 2;
+    }
+    .app-bar .nav-row {
+      display: grid; grid-template-columns: 44px 1fr auto;
+      align-items: center; gap: 8px; min-height: 44px;
+    }
+    .icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 0; color: var(--text-primary);
+    }
+    .icon-btn svg { width: 22px; height: 22px; }
+    .app-bar h1.title {
+      margin: 0; text-align: center;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.01em; color: var(--text-primary); line-height: 1;
+    }
+    .end-chat {
+      background: transparent; border: 0;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      color: #DC2626; padding: 8px 12px; min-height: 44px;
+    }
+    .behind { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .chat { flex: 1; padding: 18px 16px 100px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+    .chat-meta {
+      align-self: center; font-size: 11px; color: #475569;
+      background: #fff; padding: 4px 12px; border-radius: 999px;
+      margin-bottom: 6px; font-weight: 500;
+      box-shadow: 0 1px 2px rgba(15,27,45,.06);
+    }
+    .bot-label {
+      align-self: flex-start; font-size: 11px; font-weight: 600;
+      color: #6D28D9; padding: 0 4px 2px; letter-spacing: 0.02em;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .bot-label::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #6D28D9; }
+    .bubble { max-width: 78%; padding: 10px 14px; font-size: 14px; line-height: 1.4;
+      box-shadow: 0 1px 2px rgba(15,27,45,.08);
+      display: inline-flex; align-items: flex-end; gap: 10px;
+    }
+    .bubble .time { font-size: 11px; flex-shrink: 0; font-weight: 500; }
+    .bubble-user { align-self: flex-end; background: #FEF3C7; color: #0F1B2D;
+      border-radius: 18px 18px 4px 18px;
+    }
+    .bubble-user .time { color: rgba(15,27,45,0.50); }
+    .bubble-bot { align-self: flex-start; background: #EDE9FE; color: #0F1B2D;
+      border-radius: 18px 18px 18px 4px;
+    }
+    .bubble-bot .time { color: rgba(15,27,45,0.50); }
+    .input-bar {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface);
+      padding: 10px 12px 22px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .add-btn { width: 44px; height: 44px; border-radius: 50%;
+      background: #F1F5F9; border: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .add-btn svg { width: 20px; height: 20px; }
+    .msg-input { flex: 1; height: 44px; border-radius: 999px;
+      border: 1.5px solid var(--border-default); background: var(--bg-surface);
+      padding: 0 16px; font-family: inherit; font-size: 14px;
+    }
+    .send-btn { width: 44px; height: 44px; border-radius: 12px;
+      background: var(--brand-primary); color: var(--text-on-primary);
+      border: 1px solid rgba(0,0,0,0.06);
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+    }
+    .send-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* Modal */
+    .scrim {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15,27,45,0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; z-index: 100;
+    }
+    .modal {
+      background: var(--bg-surface);
+      border-radius: 16px;
+      padding: 22px 20px 16px;
+      width: 100%; max-width: 300px;
+      box-shadow: 0 4px 8px rgba(15,27,45,.10), 0 18px 40px rgba(15,27,45,.22);
+      display: flex; flex-direction: column; gap: 12px;
+      text-align: center;
+    }
+    .modal-icon {
+      width: 64px; height: 64px;
+      margin: 0 auto;
+      border-radius: 16px;
+      background: #FFFBEB;
+      color: #92400E;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .modal-icon svg { width: 32px; height: 32px; }
+    .modal h2 {
+      margin: 0; font-size: 15px; font-weight: 700;
+      color: var(--text-primary); letter-spacing: -0.01em;
+    }
+    .modal p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+    .modal-btn { flex: 1; min-height: 44px; border: 0; border-radius: 10px;
+      font-family: inherit; font-size: 13.5px; font-weight: 600;
+      cursor: pointer; touch-action: manipulation;
+      transition: transform 100ms;
+    }
+    .modal-btn:active { transform: translateY(1px); }
+    .modal-btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .modal-btn.primary {
+      background: var(--brand-primary); color: var(--text-on-primary);
+      box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .modal-btn.secondary { background: #F1F5F9; color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <div class="page-title">Modal · Close Bot Chat · revize</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="right">
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="1" y="7" width="3" height="4" rx="0.5" fill="#0F1B2D"/><rect x="5.5" y="5" width="3" height="6" rx="0.5" fill="#0F1B2D"/><rect x="10" y="3" width="3" height="8" rx="0.5" fill="#0F1B2D"/><rect x="14.5" y="1" width="3" height="10" rx="0.5" fill="#0F1B2D"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11 A 7 7 0 0 1 1.5 6.5 M8 11 A 4 4 0 0 1 4.5 7.5 M8 11 A 1.5 1.5 0 0 1 7 9.5" stroke="#0F1B2D" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="1" width="22" height="10" rx="2.5" stroke="#0F1B2D" stroke-opacity="0.55" fill="none"/><rect x="2" y="2.5" width="19" height="7" rx="1.5" fill="#0F1B2D"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.5" fill="#0F1B2D" opacity="0.55"/></svg>
+          </span>
+        </span>
+      </div>
+
+      <div class="app-bar">
+        <div class="nav-row">
+          <button class="icon-btn"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M10 13.28L5.65333 8.93333C5.14 8.42 5.14 7.58 5.65333 7.06667L10 2.72" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h1 class="title">Bot Chat</h1>
+          <button class="end-chat">End Chat</button>
+        </div>
+      </div>
+
+      <div class="behind">
+        <div class="chat">
+          <div class="chat-meta">Chat Started Today · 11:00 am</div>
+          <div class="bubble bubble-user">Hello, lorem ispum<span class="time">11:35</span></div>
+          <div class="bot-label">Bot</div>
+          <div class="bubble bubble-bot">Could you please lorem ipsum dolor set amet.<span class="time">11:35</span></div>
+        </div>
+      </div>
+
+      <div class="input-bar">
+        <button class="add-btn"><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M4 8H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 12V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <input class="msg-input" type="text" placeholder="Write a message" />
+        <button class="send-btn"><svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M12.0467 5.67333L6.34 2.82C2.50667 0.9 0.933333 2.47333 2.85333 6.30667L3.43333 7.46667C3.6 7.80667 3.6 8.2 3.43333 8.54L2.85333 9.69333C0.933333 13.5267 2.5 15.1 6.34 13.18L12.0467 10.3267C14.6067 9.04667 14.6067 6.95333 12.0467 5.67333Z" fill="currentColor"/></svg></button>
+      </div>
+
+      <div class="scrim" role="dialog" aria-modal="true" aria-labelledby="bc-title">
+        <div class="modal">
+          <div class="modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 id="bc-title">Close Chat</h2>
+          <p>Was this conversation helpful, or do you need further assistance?</p>
+          <div class="modal-actions">
+            <button class="modal-btn primary" type="button">Create Ticket</button>
+            <button class="modal-btn secondary" type="button">Close Chat</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-indicator on-light"></div>
+    </div>
+  </div>
+</body>
+</html>

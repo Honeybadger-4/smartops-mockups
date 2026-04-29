@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartOps · Select Available Flight (Sectioned)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/tokens.css?v=3" />
+  <link rel="stylesheet" href="styles/frame.css?v=3" />
+  <style>
+    .status-bar { background: var(--bg-surface); }
+    .app-bar {
+      background: var(--bg-surface);
+      padding: 4px 16px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative; z-index: 2;
+    }
+    .app-bar .nav-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center; gap: 8px; min-height: 44px;
+    }
+    .icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 0; color: var(--text-primary);
+      cursor: pointer; touch-action: manipulation;
+      transition: background 150ms ease-out;
+    }
+    .icon-btn:active { background: rgba(15,27,45,0.06); }
+    .icon-btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .icon-btn svg { width: 22px; height: 22px; }
+    .app-bar h1.title {
+      margin: 0; text-align: center;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.01em; color: var(--text-primary); line-height: 1;
+    }
+
+    /* Section header */
+    .section-block {
+      padding: 18px 16px 0;
+    }
+    .section-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.005em;
+      padding: 0 4px 4px;
+    }
+    .section-hint {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      padding: 0 4px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    /* Flight rows (mini version) */
+    .flights {
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .flight {
+      background: var(--bg-surface);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-sm);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      touch-action: manipulation;
+      transition: border-color 150ms, transform 100ms;
+    }
+    .flight:active { transform: translateY(1px); }
+    .flight:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .flight .body {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 14px;
+    }
+    .flight .route {
+      display: flex; align-items: center; gap: 2px;
+      font-size: 14.5px; font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .flight .route .arrow {
+      color: var(--text-tertiary); font-weight: 400; line-height: 1;
+    }
+    .flight .when {
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 4px;
+    }
+    .flight .date { font-size: 12px; color: var(--text-secondary); line-height: 1; }
+    .flight .times {
+      font-size: 11.5px; font-weight: 500;
+      color: #2563EB; white-space: nowrap; line-height: 1;
+    }
+    .flight .zone { color: #2563EB; }
+    .flight .sep { color: #2563EB; margin: 0 2px; }
+    .check {
+      width: 22px; height: 22px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border-default);
+      background: var(--bg-surface);
+      flex-shrink: 0;
+    }
+    .flight.selected {
+      background: #FFFBEB;
+      border-color: var(--brand-primary);
+    }
+    .flight.selected .check {
+      background: var(--brand-primary);
+      border-color: var(--brand-primary);
+    }
+
+    /* Future flight section */
+    .future-section {
+      padding: 18px 16px 0;
+    }
+    .future-section .lbl {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      padding: 0 4px;
+      letter-spacing: -0.005em;
+    }
+    .future-section .hint {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      padding: 0 4px;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    /* Outlined text field with floating label (Figma pattern) */
+    .field {
+      position: relative;
+      width: 100%;
+    }
+    .field input {
+      width: 100%;
+      height: 56px;
+      padding: 18px 16px 6px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-default);
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+    }
+    .field input::placeholder {
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+    .field input:hover { border-color: #94A3B8; }
+    .field input:focus, .field input:focus-visible {
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(255,176,32,0.18);
+    }
+    .field-label {
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      padding: 0 6px;
+      background: var(--bg-base);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+      pointer-events: none;
+    }
+
+    /* Duties in selected date range */
+    .duties {
+      padding: 0 16px 110px; /* extra bottom for footer-bar overlay */
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .duty {
+      background: var(--bg-surface);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .duty .icon {
+      width: 32px; height: 32px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .duty .icon img { width: 32px; height: 32px; display: block; }
+    .duty .body {
+      flex: 1; min-width: 0;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 14px;
+    }
+    .duty .label {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.005em;
+      line-height: 1;
+    }
+    .duty .when {
+      display: flex; flex-direction: column;
+      align-items: flex-end; gap: 4px;
+    }
+    .duty .date { font-size: 12px; color: var(--text-secondary); line-height: 1; }
+    .duty .times {
+      font-size: 11.5px; font-weight: 500;
+      color: #2563EB; white-space: nowrap; line-height: 1;
+    }
+    .duty .zone { color: #2563EB; }
+    .duty .sep { color: #2563EB; margin: 0 2px; }
+
+    .footer-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface);
+      padding: 14px 16px 28px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .cta {
+      width: 100%; height: 56px;
+      border-radius: var(--r-md);
+      border: 0;
+      font-family: inherit;
+      font-size: 15.5px; font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer; touch-action: manipulation;
+      transition: transform 150ms;
+    }
+    .cta:active { transform: translateY(1px); }
+    .cta:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+    .cta-primary {
+      background: var(--brand-primary);
+      color: var(--text-on-primary);
+      box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .cta-disabled {
+      background: #E2E8F0; color: #94A3B8;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-title">Select Available Flight (Sectioned) · revize</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="right">
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="1" y="7" width="3" height="4" rx="0.5" fill="#0F1B2D"/><rect x="5.5" y="5" width="3" height="6" rx="0.5" fill="#0F1B2D"/><rect x="10" y="3" width="3" height="8" rx="0.5" fill="#0F1B2D"/><rect x="14.5" y="1" width="3" height="10" rx="0.5" fill="#0F1B2D"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11 A 7 7 0 0 1 1.5 6.5 M8 11 A 4 4 0 0 1 4.5 7.5 M8 11 A 1.5 1.5 0 0 1 7 9.5" stroke="#0F1B2D" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="1" width="22" height="10" rx="2.5" stroke="#0F1B2D" stroke-opacity="0.55" fill="none"/><rect x="2" y="2.5" width="19" height="7" rx="1.5" fill="#0F1B2D"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.5" fill="#0F1B2D" opacity="0.55"/></svg>
+          </span>
+        </span>
+      </div>
+
+      <div class="app-bar">
+        <div class="nav-row">
+          <button class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M10 13.28L5.65333 8.93333C5.14 8.42 5.14 7.58 5.65333 7.06667L10 2.72" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h1 class="title">Select Available Flight</h1>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Departing Soon -->
+        <div class="section-block">
+          <div class="section-label">Departing Soon (0–2 Hours)</div>
+          <p class="section-hint">Support is not available for these flights.</p>
+        </div>
+
+        <!-- Upcoming Flights -->
+        <div class="section-block">
+          <div class="section-label">Upcoming Flights (2–12 Hours)</div>
+          <p class="section-hint">Live chat support will be provided for these flights.</p>
+        </div>
+        <div class="flights">
+          <div class="flight" tabindex="0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17.0365 0H6.97548C2.6053 0 0 2.604 0 6.972V17.016C0 21.396 2.6053 24 6.97548 24H17.0245C21.3947 24 24 21.396 24 17.028V6.972C24.012 2.604 21.4067 0 17.0365 0ZM19.8219 13.428C19.8219 14.148 19.2696 14.508 18.6093 14.22L14.5873 12.492C14.119 12.3 13.7468 12.54 13.7468 13.044V15.264C13.7468 15.456 13.8549 15.732 13.999 15.876L15.968 17.856C16.1721 18.06 16.2681 18.468 16.1721 18.744L15.7879 19.896C15.6198 20.4 15.0435 20.64 14.5753 20.4L12.5703 18.696C12.2581 18.444 11.7539 18.444 11.4537 18.696L9.4367 20.4C8.95646 20.64 8.39218 20.4 8.2241 19.884L7.83991 18.732C7.74386 18.456 7.83991 18.048 8.04401 17.844L10.049 15.876C10.1811 15.744 10.3011 15.468 10.3011 15.264V13.044C10.3011 12.54 9.91694 12.288 9.46071 12.492L5.43871 14.22C4.76638 14.508 4.22611 14.148 4.22611 13.428V12.312C4.22611 11.736 4.67033 11.064 5.19859 10.836L9.92895 8.796C10.121 8.712 10.2891 8.46 10.2891 8.244V5.76C10.2891 4.944 10.8774 3.972 11.6098 3.612C11.8739 3.48 12.1741 3.48 12.4382 3.612C13.1586 3.984 13.7589 4.944 13.7589 5.76V8.244C13.7589 8.46 13.9149 8.712 14.119 8.796L18.8494 10.836C19.3897 11.064 19.8219 11.736 19.8219 12.312V13.428Z" fill="#068BEE"/></svg>
+            <span class="body">
+              <span class="route">SAW <span class="arrow">→</span> SAW</span>
+              <span class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </span>
+            </span>
+            <span class="check"></span>
+          </div>
+          <div class="flight" tabindex="0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17.0365 0H6.97548C2.6053 0 0 2.604 0 6.972V17.016C0 21.396 2.6053 24 6.97548 24H17.0245C21.3947 24 24 21.396 24 17.028V6.972C24.012 2.604 21.4067 0 17.0365 0ZM19.8219 13.428C19.8219 14.148 19.2696 14.508 18.6093 14.22L14.5873 12.492C14.119 12.3 13.7468 12.54 13.7468 13.044V15.264C13.7468 15.456 13.8549 15.732 13.999 15.876L15.968 17.856C16.1721 18.06 16.2681 18.468 16.1721 18.744L15.7879 19.896C15.6198 20.4 15.0435 20.64 14.5753 20.4L12.5703 18.696C12.2581 18.444 11.7539 18.444 11.4537 18.696L9.4367 20.4C8.95646 20.64 8.39218 20.4 8.2241 19.884L7.83991 18.732C7.74386 18.456 7.83991 18.048 8.04401 17.844L10.049 15.876C10.1811 15.744 10.3011 15.468 10.3011 15.264V13.044C10.3011 12.54 9.91694 12.288 9.46071 12.492L5.43871 14.22C4.76638 14.508 4.22611 14.148 4.22611 13.428V12.312C4.22611 11.736 4.67033 11.064 5.19859 10.836L9.92895 8.796C10.121 8.712 10.2891 8.46 10.2891 8.244V5.76C10.2891 4.944 10.8774 3.972 11.6098 3.612C11.8739 3.48 12.1741 3.48 12.4382 3.612C13.1586 3.984 13.7589 4.944 13.7589 5.76V8.244C13.7589 8.46 13.9149 8.712 14.119 8.796L18.8494 10.836C19.3897 11.064 19.8219 11.736 19.8219 12.312V13.428Z" fill="#068BEE"/></svg>
+            <span class="body">
+              <span class="route">SAW <span class="arrow">→</span> SAW</span>
+              <span class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </span>
+            </span>
+            <span class="check"></span>
+          </div>
+        </div>
+
+        <!-- Future Flights -->
+        <div class="future-section">
+          <div class="lbl">For future flights <span style="color:var(--text-tertiary);font-weight:500;">(+12 Hours)</span></div>
+          <p class="hint">A ticket will be created based on your selection.</p>
+          <div class="field">
+            <span class="field-label">Date Selection</span>
+            <input type="text" placeholder="Please select your days." readonly />
+          </div>
+        </div>
+
+        <!-- Duties in Selected Date Range -->
+        <div class="section-block">
+          <div class="section-label">The duties in the selected date range.</div>
+        </div>
+        <div class="duties">
+          <div class="duty">
+            <span class="icon" aria-hidden="true">
+              <!-- Flight icon (Clip path group.svg) -->
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.587 2.66675H10.4137C5.56033 2.66675 2.66699 5.56008 2.66699 10.4134V21.5734C2.66699 26.4401 5.56033 29.3334 10.4137 29.3334H21.5737C26.427 29.3334 29.3203 26.4401 29.3203 21.5867V10.4134C29.3337 5.56008 26.4403 2.66675 21.587 2.66675ZM24.6803 17.5867C24.6803 18.3867 24.067 18.7867 23.3337 18.4667L18.867 16.5467C18.347 16.3334 17.9337 16.6001 17.9337 17.1601V19.6267C17.9337 19.8401 18.0537 20.1467 18.2137 20.3067L20.4003 22.5067C20.627 22.7334 20.7337 23.1867 20.627 23.4934L20.2003 24.7734C20.0137 25.3334 19.3737 25.6001 18.8537 25.3334L16.627 23.4401C16.2803 23.1601 15.7203 23.1601 15.387 23.4401L13.147 25.3334C12.6137 25.6001 11.987 25.3334 11.8003 24.7601L11.3737 23.4801C11.267 23.1734 11.3737 22.7201 11.6003 22.4934L13.827 20.3067C13.9737 20.1601 14.107 19.8534 14.107 19.6267V17.1601C14.107 16.6001 13.6803 16.3201 13.1737 16.5467L8.70699 18.4667C7.96033 18.7867 7.36033 18.3867 7.36033 17.5867V16.3467C7.36033 15.7067 7.85366 14.9601 8.44033 14.7067L13.6937 12.4401C13.907 12.3467 14.0937 12.0667 14.0937 11.8267V9.06675C14.0937 8.16008 14.747 7.08008 15.5603 6.68008C15.8537 6.53341 16.187 6.53341 16.4803 6.68008C17.2803 7.09341 17.947 8.16008 17.947 9.06675V11.8267C17.947 12.0667 18.1203 12.3467 18.347 12.4401L23.6003 14.7067C24.2003 14.9601 24.6803 15.7067 24.6803 16.3467V17.5867Z" fill="#068BEE"/>
+              </svg>
+            </span>
+            <div class="body">
+              <span class="label">SAW <span style="color:var(--text-tertiary);font-weight:400;">→</span> SAW</span>
+              <div class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="duty">
+            <span class="icon" aria-hidden="true">
+              <!-- Building icon -->
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14.3336 6.18672L8.42695 3.26673C5.24029 1.70673 2.62695 3.29339 2.62695 6.78673V26.5734C2.62695 28.0934 3.89362 29.3334 5.44029 29.3334H15.3336C16.067 29.3334 16.667 28.7334 16.667 28.0001V9.88006C16.667 8.48006 15.6136 6.81339 14.3336 6.18672ZM11.9603 18.3334H7.33362C6.78695 18.3334 6.33362 17.8801 6.33362 17.3334C6.33362 16.7867 6.78695 16.3334 7.33362 16.3334H11.9603C12.507 16.3334 12.9603 16.7867 12.9603 17.3334C12.9603 17.8801 12.5203 18.3334 11.9603 18.3334ZM11.9603 13.0001H7.33362C6.78695 13.0001 6.33362 12.5467 6.33362 12.0001C6.33362 11.4534 6.78695 11.0001 7.33362 11.0001H11.9603C12.507 11.0001 12.9603 11.4534 12.9603 12.0001C12.9603 12.5467 12.5203 13.0001 11.9603 13.0001Z" fill="#E57D2D"/>
+                <path d="M29.3337 24.0532V25.9999C29.3337 27.8399 27.8403 29.3332 26.0003 29.3332H19.9603C19.2403 29.3332 18.667 28.7599 18.667 28.0399V25.1599C20.0937 25.3332 21.6003 24.9199 22.6803 24.0532C23.587 24.7866 24.747 25.2266 26.0137 25.2266C27.2537 25.2266 28.4137 24.7866 29.3337 24.0532Z" fill="#E57D2D"/>
+                <path d="M29.3337 20.0668V20.0801C29.227 21.8268 27.8003 23.2268 26.0137 23.2268C24.1603 23.2268 22.6803 21.7201 22.6803 19.8934C22.6803 21.9334 20.8003 23.5734 18.667 23.1601V16.0001C18.667 15.1468 19.4537 14.5068 20.2937 14.6934L22.6803 15.2268L23.3203 15.3734L26.0403 15.9868C26.6937 16.1201 27.2937 16.3468 27.8137 16.6801C27.8137 16.6934 27.827 16.6934 27.827 16.6934C27.9603 16.7868 28.0937 16.8934 28.2137 17.0134C28.827 17.6268 29.227 18.5201 29.3203 19.8268C29.3203 19.9068 29.3337 19.9868 29.3337 20.0668Z" fill="#E57D2D"/>
+              </svg>
+            </span>
+            <div class="body">
+              <span class="label">AIRPORTD1</span>
+              <div class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="duty">
+            <span class="icon" aria-hidden="true">
+              <!-- Clipboard tick (purple) — TRTAFA -->
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.1333 2.66675H12.8667C11.48 2.66675 10.3467 3.78675 10.3467 5.17341V6.42675C10.3467 7.81342 11.4667 8.93341 12.8533 8.93341H19.1333C20.52 8.93341 21.64 7.81342 21.64 6.42675V5.17341C21.6533 3.78675 20.52 2.66675 19.1333 2.66675Z" fill="#944DE7"/>
+                <path d="M22.9867 6.42664C22.9867 8.54664 21.2534 10.28 19.1334 10.28H12.8667C10.7467 10.28 9.01339 8.54664 9.01339 6.42664C9.01339 5.67997 8.21339 5.21331 7.54672 5.55997C5.66672 6.55997 4.38672 8.54664 4.38672 10.8266V23.3733C4.38672 26.6533 7.06672 29.3333 10.3467 29.3333H21.6534C24.9334 29.3333 27.6134 26.6533 27.6134 23.3733V10.8266C27.6134 8.54664 26.3334 6.55997 24.4534 5.55997C23.7867 5.21331 22.9867 5.67997 22.9867 6.42664ZM20.4534 16.9733L15.1201 22.3066C14.9201 22.5066 14.6667 22.6 14.4134 22.6C14.1601 22.6 13.9067 22.5066 13.7067 22.3066L11.7067 20.3066C11.3201 19.92 11.3201 19.28 11.7067 18.8933C12.0934 18.5066 12.7334 18.5066 13.1201 18.8933L14.4134 20.1866L19.0401 15.56C19.4267 15.1733 20.0667 15.1733 20.4534 15.56C20.8401 15.9466 20.8401 16.5866 20.4534 16.9733Z" fill="#944DE7"/>
+              </svg>
+            </span>
+            <div class="body">
+              <span class="label">TRTAFA06</span>
+              <div class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="duty">
+            <span class="icon" aria-hidden="true">
+              <!-- Clipboard tick (red) — FOF -->
+              <svg width="33" height="33" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.1338 20.3466L18.4271 19.64L19.0938 18.9733C19.4805 18.5866 19.4805 17.9466 19.0938 17.56C18.7071 17.1733 18.0671 17.1733 17.6805 17.56L17.0138 18.2266L16.3071 17.52C15.9205 17.1333 15.2805 17.1333 14.8938 17.52C14.5071 17.9066 14.5071 18.5466 14.8938 18.9333L15.6005 19.64L14.8671 20.3733C14.4805 20.76 14.4805 21.4 14.8671 21.7866C15.0671 21.9866 15.3205 22.08 15.5738 22.08C15.8271 22.08 16.0805 21.9866 16.2805 21.7866L17.0138 21.0533L17.7205 21.76C17.9205 21.96 18.1738 22.0533 18.4271 22.0533C18.6805 22.0533 18.9338 21.96 19.1338 21.76C19.5205 21.3733 19.5205 20.7466 19.1338 20.3466Z" fill="#EB4D55"/>
+                <path opacity="0.4" d="M30.1329 16.2134L29.3062 25.2534C29.0262 27.92 27.9329 30.64 22.0662 30.64H11.9062C6.03954 30.64 4.94621 27.92 4.67954 25.2667L3.86621 16.5867C3.87954 16.6 3.89288 16.6134 3.91954 16.6267C4.37288 16.92 4.81288 17.2134 5.29288 17.48C5.47954 17.6 5.67954 17.7067 5.87954 17.8134C7.38621 18.64 8.99954 19.2934 10.6662 19.7467C11.3329 19.9467 12.0129 20.0934 12.7062 20.2134C12.9729 22.3467 14.7995 24 16.9995 24C19.2262 24 21.0662 22.3067 21.3062 20.1334V20.12C21.9862 19.9867 22.6662 19.8134 23.3329 19.6134C24.9995 19.0934 26.6129 18.4 28.1195 17.52C28.1995 17.48 28.2662 17.44 28.3195 17.4C28.9329 17.0667 29.5195 16.68 30.0795 16.28C30.1062 16.2667 30.1195 16.24 30.1329 16.2134Z" fill="#EB4D55"/>
+                <path d="M29.1204 10.3068C27.987 9.05344 26.107 8.42677 23.347 8.42677H23.027V8.37344C23.027 6.13344 23.027 3.36011 18.0137 3.36011H15.987C10.9737 3.36011 10.9737 6.13344 10.9737 8.37344V8.42677H10.6537C7.89371 8.42677 6.00038 9.05344 4.88038 10.3068C3.56038 11.7868 3.60038 13.7468 3.73371 15.0934L3.74704 15.1868L3.86704 16.5868C3.88038 16.6001 3.90704 16.6134 3.93371 16.6268C4.38704 16.9201 4.82704 17.2134 5.30704 17.4801C5.49371 17.6001 5.69371 17.7068 5.89371 17.8134C7.40038 18.6401 9.01371 19.2934 10.667 19.7468C10.707 23.2001 13.5337 26.0001 17.0004 26.0001C20.4937 26.0001 23.3337 23.1601 23.3337 19.6668V19.6134C25.0137 19.1068 26.627 18.4001 28.1337 17.5201C28.2137 17.4801 28.267 17.4401 28.3337 17.4001C28.947 17.0668 29.5337 16.6801 30.0937 16.2801C30.107 16.2668 30.1337 16.2401 30.147 16.2134L30.2004 15.7334L30.267 15.1068C30.2804 15.0268 30.2804 14.9601 30.2937 14.8668C30.4004 13.5334 30.3737 11.6934 29.1204 10.3068Z" fill="#EB4D55"/>
+              </svg>
+            </span>
+            <div class="body">
+              <span class="label">FOF</span>
+              <div class="when">
+                <span class="date">21 Oct 2023</span>
+                <span class="times">12:45<span class="zone">(L)</span><span class="sep">/</span>19:10<span class="zone">(Z)</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bar">
+        <button class="cta cta-primary">Continue</button>
+      </div>
+      <div class="home-indicator on-light"></div>
+    </div>
+  </div>
+</body>
+</html>

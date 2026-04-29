@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartOps · Select Dates</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/tokens.css?v=3" />
+  <link rel="stylesheet" href="styles/frame.css?v=3" />
+  <style>
+    .status-bar { background: var(--bg-surface); }
+    .app-bar {
+      background: var(--bg-surface);
+      padding: 4px 16px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative; z-index: 2;
+    }
+    .app-bar .nav-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center; gap: 8px; min-height: 44px;
+    }
+    .icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 0; color: var(--text-primary);
+      cursor: pointer; touch-action: manipulation;
+    }
+    .icon-btn svg { width: 22px; height: 22px; }
+    .app-bar h1.title {
+      margin: 0; text-align: center;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.01em; color: var(--text-primary); line-height: 1;
+    }
+
+    /* Legend (sticky at top) */
+    .legend {
+      background: var(--bg-surface);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .legend-item .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .legend-item .dot.available { background: #16A34A; }
+    .legend-item .dot.pending   { background: #F59E0B; }
+    .legend-item .dot.off       { background: #94A3B8; }
+    .legend-item .dot.flight    { background: #2563EB; }
+
+    /* Calendar — multi-month scrollable */
+    .calendar-wrap {
+      padding: 16px 12px 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .month {
+      background: var(--bg-surface);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 16px 14px 14px;
+    }
+    .month h2 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      letter-spacing: -0.005em;
+    }
+    .week-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      padding: 0 2px 8px;
+    }
+    .week-days span {
+      text-align: center;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .day {
+      aspect-ratio: 1 / 1;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+      border-radius: 8px;
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+      min-height: 38px;
+      position: relative;
+      transition: background 100ms;
+    }
+    .day:hover:not(.dis):not(.range):not(.start):not(.end) { background: #F1F5F9; }
+    .day:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 1px; }
+    .day.dis { color: #CBD5E1; cursor: default; }
+    .day .day-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: transparent;
+      margin-top: -1px;
+    }
+    .day.has-flight  .day-dot { background: #2563EB; }
+    .day.has-pending .day-dot { background: #F59E0B; }
+    .day.has-off     .day-dot { background: #94A3B8; }
+    .day.has-avail   .day-dot { background: #16A34A; }
+    .day.range {
+      background: #FFFBEB;
+      border-radius: 0;
+      color: #92400E;
+    }
+    .day.start, .day.end {
+      background: var(--brand-primary);
+      color: var(--text-on-primary);
+      font-weight: 700;
+    }
+    .day.start { border-radius: 8px 0 0 8px; }
+    .day.end { border-radius: 0 8px 8px 0; }
+    .day.range .day-dot,
+    .day.start .day-dot,
+    .day.end .day-dot { background: rgba(15,27,45,0.6); }
+
+    /* Footer */
+    .footer-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface);
+      padding: 14px 16px 28px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .selected-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6px 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .selected-info b { color: var(--text-primary); font-weight: 600; }
+    .cta {
+      width: 100%; height: 56px;
+      border-radius: var(--r-md);
+      border: 0;
+      font-family: inherit;
+      font-size: 15.5px; font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer; touch-action: manipulation;
+      background: var(--brand-primary);
+      color: var(--text-on-primary);
+      box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: transform 150ms;
+    }
+    .cta:active { transform: translateY(1px); }
+    .cta:focus-visible { outline: 2px solid #0F1B2D; outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <div class="page-title">Select Dates · revize</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="right">
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="1" y="7" width="3" height="4" rx="0.5" fill="#0F1B2D"/><rect x="5.5" y="5" width="3" height="6" rx="0.5" fill="#0F1B2D"/><rect x="10" y="3" width="3" height="8" rx="0.5" fill="#0F1B2D"/><rect x="14.5" y="1" width="3" height="10" rx="0.5" fill="#0F1B2D"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11 A 7 7 0 0 1 1.5 6.5 M8 11 A 4 4 0 0 1 4.5 7.5 M8 11 A 1.5 1.5 0 0 1 7 9.5" stroke="#0F1B2D" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="1" width="22" height="10" rx="2.5" stroke="#0F1B2D" stroke-opacity="0.55" fill="none"/><rect x="2" y="2.5" width="19" height="7" rx="1.5" fill="#0F1B2D"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.5" fill="#0F1B2D" opacity="0.55"/></svg>
+          </span>
+        </span>
+      </div>
+
+      <div class="app-bar">
+        <div class="nav-row">
+          <button class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M10 13.28L5.65333 8.93333C5.14 8.42 5.14 7.58 5.65333 7.06667L10 2.72" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h1 class="title">Select Dates</h1>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Legend -->
+        <div class="legend">
+          <span class="legend-item"><span class="dot available"></span>Available</span>
+          <span class="legend-item"><span class="dot flight"></span>Flight</span>
+          <span class="legend-item"><span class="dot pending"></span>Pending</span>
+          <span class="legend-item"><span class="dot off"></span>Off Day</span>
+        </div>
+
+        <div class="calendar-wrap">
+          <!-- May 2026 -->
+          <div class="month">
+            <h2>May 2026</h2>
+            <div class="week-days"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+            <div class="days">
+              <button class="day dis">26<span class="day-dot"></span></button><button class="day dis">27<span class="day-dot"></span></button><button class="day dis">28<span class="day-dot"></span></button><button class="day dis">29<span class="day-dot"></span></button><button class="day dis">30<span class="day-dot"></span></button><button class="day has-avail">1<span class="day-dot"></span></button><button class="day has-avail">2<span class="day-dot"></span></button>
+              <button class="day has-flight">3<span class="day-dot"></span></button><button class="day has-flight">4<span class="day-dot"></span></button><button class="day has-avail">5<span class="day-dot"></span></button><button class="day has-off">6<span class="day-dot"></span></button><button class="day has-pending">7<span class="day-dot"></span></button><button class="day has-pending">8<span class="day-dot"></span></button><button class="day has-avail">9<span class="day-dot"></span></button>
+              <button class="day has-flight">10<span class="day-dot"></span></button><button class="day has-flight">11<span class="day-dot"></span></button><button class="day has-avail">12<span class="day-dot"></span></button><button class="day has-avail">13<span class="day-dot"></span></button><button class="day has-pending">14<span class="day-dot"></span></button><button class="day has-flight">15<span class="day-dot"></span></button><button class="day has-flight">16<span class="day-dot"></span></button>
+              <button class="day has-off">17<span class="day-dot"></span></button><button class="day has-avail">18<span class="day-dot"></span></button><button class="day has-flight">19<span class="day-dot"></span></button><button class="day has-flight">20<span class="day-dot"></span></button><button class="day has-avail">21<span class="day-dot"></span></button><button class="day has-pending">22<span class="day-dot"></span></button><button class="day has-off">23<span class="day-dot"></span></button>
+              <button class="day has-avail">24<span class="day-dot"></span></button><button class="day has-flight">25<span class="day-dot"></span></button><button class="day has-flight">26<span class="day-dot"></span></button><button class="day has-pending">27<span class="day-dot"></span></button><button class="day start">28<span class="day-dot"></span></button><button class="day range">29<span class="day-dot"></span></button><button class="day range">30<span class="day-dot"></span></button>
+              <button class="day end">31<span class="day-dot"></span></button><button class="day dis">1<span class="day-dot"></span></button><button class="day dis">2<span class="day-dot"></span></button><button class="day dis">3<span class="day-dot"></span></button><button class="day dis">4<span class="day-dot"></span></button><button class="day dis">5<span class="day-dot"></span></button><button class="day dis">6<span class="day-dot"></span></button>
+            </div>
+          </div>
+
+          <!-- Jun 2026 -->
+          <div class="month">
+            <h2>June 2026</h2>
+            <div class="week-days"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+            <div class="days">
+              <button class="day dis">31<span class="day-dot"></span></button><button class="day has-avail">1<span class="day-dot"></span></button><button class="day has-flight">2<span class="day-dot"></span></button><button class="day has-flight">3<span class="day-dot"></span></button><button class="day has-pending">4<span class="day-dot"></span></button><button class="day has-avail">5<span class="day-dot"></span></button><button class="day has-off">6<span class="day-dot"></span></button>
+              <button class="day has-avail">7<span class="day-dot"></span></button><button class="day has-flight">8<span class="day-dot"></span></button><button class="day has-flight">9<span class="day-dot"></span></button><button class="day has-pending">10<span class="day-dot"></span></button><button class="day has-avail">11<span class="day-dot"></span></button><button class="day has-flight">12<span class="day-dot"></span></button><button class="day has-flight">13<span class="day-dot"></span></button>
+              <button class="day has-off">14<span class="day-dot"></span></button><button class="day has-avail">15<span class="day-dot"></span></button><button class="day has-flight">16<span class="day-dot"></span></button><button class="day has-flight">17<span class="day-dot"></span></button><button class="day has-pending">18<span class="day-dot"></span></button><button class="day has-avail">19<span class="day-dot"></span></button><button class="day has-off">20<span class="day-dot"></span></button>
+              <button class="day has-flight">21<span class="day-dot"></span></button><button class="day has-flight">22<span class="day-dot"></span></button><button class="day has-pending">23<span class="day-dot"></span></button><button class="day has-avail">24<span class="day-dot"></span></button><button class="day has-flight">25<span class="day-dot"></span></button><button class="day has-flight">26<span class="day-dot"></span></button><button class="day has-off">27<span class="day-dot"></span></button>
+              <button class="day has-avail">28<span class="day-dot"></span></button><button class="day has-pending">29<span class="day-dot"></span></button><button class="day has-flight">30<span class="day-dot"></span></button><button class="day dis">1<span class="day-dot"></span></button><button class="day dis">2<span class="day-dot"></span></button><button class="day dis">3<span class="day-dot"></span></button><button class="day dis">4<span class="day-dot"></span></button>
+            </div>
+          </div>
+
+          <!-- Jul 2026 -->
+          <div class="month">
+            <h2>July 2026</h2>
+            <div class="week-days"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+            <div class="days">
+              <button class="day dis">28<span class="day-dot"></span></button><button class="day dis">29<span class="day-dot"></span></button><button class="day dis">30<span class="day-dot"></span></button><button class="day has-flight">1<span class="day-dot"></span></button><button class="day has-flight">2<span class="day-dot"></span></button><button class="day has-pending">3<span class="day-dot"></span></button><button class="day has-off">4<span class="day-dot"></span></button>
+              <button class="day has-avail">5<span class="day-dot"></span></button><button class="day has-flight">6<span class="day-dot"></span></button><button class="day has-flight">7<span class="day-dot"></span></button><button class="day has-pending">8<span class="day-dot"></span></button><button class="day has-avail">9<span class="day-dot"></span></button><button class="day has-flight">10<span class="day-dot"></span></button><button class="day has-off">11<span class="day-dot"></span></button>
+              <button class="day has-flight">12<span class="day-dot"></span></button><button class="day has-flight">13<span class="day-dot"></span></button><button class="day has-pending">14<span class="day-dot"></span></button><button class="day has-avail">15<span class="day-dot"></span></button><button class="day has-flight">16<span class="day-dot"></span></button><button class="day has-flight">17<span class="day-dot"></span></button><button class="day has-off">18<span class="day-dot"></span></button>
+              <button class="day has-pending">19<span class="day-dot"></span></button><button class="day has-flight">20<span class="day-dot"></span></button><button class="day has-flight">21<span class="day-dot"></span></button><button class="day has-avail">22<span class="day-dot"></span></button><button class="day has-pending">23<span class="day-dot"></span></button><button class="day has-flight">24<span class="day-dot"></span></button><button class="day has-off">25<span class="day-dot"></span></button>
+              <button class="day has-avail">26<span class="day-dot"></span></button><button class="day has-flight">27<span class="day-dot"></span></button><button class="day has-flight">28<span class="day-dot"></span></button><button class="day has-pending">29<span class="day-dot"></span></button><button class="day has-avail">30<span class="day-dot"></span></button><button class="day has-flight">31<span class="day-dot"></span></button><button class="day dis">1<span class="day-dot"></span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bar">
+        <button class="cta">Select</button>
+      </div>
+      <div class="home-indicator on-light"></div>
+    </div>
+  </div>
+</body>
+</html>

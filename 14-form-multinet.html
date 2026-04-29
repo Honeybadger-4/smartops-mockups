@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SmartOps · Multinet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/tokens.css?v=3" />
+  <link rel="stylesheet" href="styles/frame.css?v=3" />
+  <style>
+    .status-bar { background: var(--bg-surface); }
+    .app-bar {
+      background: var(--bg-surface);
+      padding: 4px 16px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      position: relative;
+      z-index: 2;
+    }
+    .app-bar .nav-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+    }
+    .icon-btn {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 0;
+      color: var(--text-primary);
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background 150ms ease-out, transform 100ms ease-out;
+    }
+    .icon-btn:active { background: rgba(15,27,45,0.06); transform: scale(0.94); }
+    .icon-btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .icon-btn svg { width: 22px; height: 22px; }
+    .app-bar h1.title {
+      margin: 0;
+      text-align: center;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    h2.helper-card {
+      margin: 0;
+      background: #FFFBEB;
+      padding: 16px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #78350F;
+      border-bottom: 1px solid rgba(255,176,32,0.20);
+    }
+
+    /* Form (Figma pattern: outlined input + floating label) */
+    .form-stack {
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .field {
+      position: relative;
+      width: 100%;
+    }
+    .field-label {
+      position: absolute;
+      top: -8px;
+      left: 12px;
+      padding: 0 6px;
+      background: var(--bg-base);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.01em;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .field-counter {
+      position: absolute;
+      top: -8px;
+      right: 12px;
+      padding: 0 6px;
+      background: var(--bg-base);
+      font-size: 11.5px;
+      color: var(--text-tertiary);
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .textarea {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-default);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text-primary);
+      padding: 18px 16px 14px;
+      outline: none;
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.5;
+      touch-action: manipulation;
+      transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+    }
+    .textarea:focus, .textarea:focus-visible {
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 3px rgba(255,176,32,0.18);
+    }
+    .textarea::placeholder { color: var(--text-tertiary); }
+
+    /* Attachment as outlined input pattern */
+    .attach-input {
+      width: 100%;
+      min-height: 56px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-default);
+      border-radius: 10px;
+      padding: 18px 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      touch-action: manipulation;
+      color: var(--text-tertiary);
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .attach-input:hover { border-color: #94A3B8; }
+    .attach-input:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .attach-input svg { width: 18px; height: 18px; color: #64748B; }
+
+    /* Uploaded files thumbnails */
+    .uploads {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 0 4px;
+      flex-wrap: wrap;
+    }
+    .upload-item {
+      position: relative;
+      width: 64px;
+      flex-shrink: 0;
+    }
+    .upload-thumb {
+      width: 64px;
+      height: 80px;
+      background: #fff;
+      border: 1px solid #E2E8F0;
+      border-radius: 6px;
+      box-shadow: 0 1px 2px rgba(15,27,45,.06);
+      padding: 6px 5px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .upload-thumb .doc-line {
+      height: 1.5px;
+      background: #CBD5E1;
+      border-radius: 1px;
+    }
+    .upload-thumb .doc-line.short { width: 60%; }
+    .upload-thumb .doc-line.med   { width: 85%; }
+    .upload-thumb .doc-line.full  { width: 100%; }
+    .upload-thumb .doc-line.thick { background: #94A3B8; height: 2px; margin-bottom: 2px; }
+    .upload-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #DC2626;
+      color: #fff;
+      border: 2px solid #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: manipulation;
+      padding: 0;
+      box-shadow: 0 1px 2px rgba(15,27,45,.15);
+      transition: transform 100ms;
+    }
+    .upload-remove:active { transform: scale(0.92); }
+    .upload-remove:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+    .upload-remove svg { width: 10px; height: 10px; }
+
+    .footer-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface);
+      padding: 14px 16px 28px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .cta {
+      width: 100%; height: 56px;
+      border-radius: var(--r-md);
+      border: 0;
+      font-family: inherit;
+      font-size: 15.5px; font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 150ms ease-out;
+    }
+    .cta:active { transform: translateY(1px); }
+    .cta:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+    .cta-primary {
+      background: var(--brand-primary);
+      color: var(--text-on-primary);
+      box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.45);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .cta-disabled {
+      background: #E2E8F0;
+      color: #94A3B8;
+      cursor: not-allowed;
+      box-shadow: none;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-title">Multinet · revize</div>
+  <div class="iphone">
+    <div class="screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="right">
+          <span class="icons">
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="1" y="7" width="3" height="4" rx="0.5" fill="#0F1B2D"/><rect x="5.5" y="5" width="3" height="6" rx="0.5" fill="#0F1B2D"/><rect x="10" y="3" width="3" height="8" rx="0.5" fill="#0F1B2D"/><rect x="14.5" y="1" width="3" height="10" rx="0.5" fill="#0F1B2D"/></svg>
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 11 A 7 7 0 0 1 1.5 6.5 M8 11 A 4 4 0 0 1 4.5 7.5 M8 11 A 1.5 1.5 0 0 1 7 9.5" stroke="#0F1B2D" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x="0.5" y="1" width="22" height="10" rx="2.5" stroke="#0F1B2D" stroke-opacity="0.55" fill="none"/><rect x="2" y="2.5" width="19" height="7" rx="1.5" fill="#0F1B2D"/><rect x="23.5" y="4" width="1.5" height="4" rx="0.5" fill="#0F1B2D" opacity="0.55"/></svg>
+          </span>
+        </span>
+      </div>
+
+      <div class="app-bar">
+        <div class="nav-row">
+          <button class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 16 16" fill="none"><path d="M10 13.28L5.65333 8.93333C5.14 8.42 5.14 7.58 5.65333 7.06667L10 2.72" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <h1 class="title">Multinet</h1>
+          <span></span>
+        </div>
+      </div>
+
+      <div class="content">
+        <h2 class="helper-card">Could you share a few more details with us?</h2>
+
+        <div class="form-stack">
+          <div class="field">
+            <span class="field-label">Detail</span>
+            <span class="field-counter"><span id="char-count">0</span>/250</span>
+            <textarea class="textarea" id="detail-input" maxlength="250" placeholder="Please write details"></textarea>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Attachment (Optional)</span>
+            <button class="attach-input" type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              Upload a document
+            </button>
+
+            <!-- Uploaded documents (uploaded state) -->
+            <div class="uploads" aria-label="Uploaded documents">
+              <div class="upload-item">
+                <div class="upload-thumb" aria-hidden="true">
+                  <div class="doc-line thick"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line med"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line short"></div>
+                  <div class="doc-line full"></div>
+                </div>
+                <button class="upload-remove" type="button" aria-label="Remove document 1">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="upload-item">
+                <div class="upload-thumb" aria-hidden="true">
+                  <div class="doc-line thick"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line med"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line short"></div>
+                  <div class="doc-line full"></div>
+                </div>
+                <button class="upload-remove" type="button" aria-label="Remove document 2">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="upload-item">
+                <div class="upload-thumb" aria-hidden="true">
+                  <div class="doc-line thick"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line med"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line short"></div>
+                  <div class="doc-line full"></div>
+                </div>
+                <button class="upload-remove" type="button" aria-label="Remove document 3">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+              <div class="upload-item">
+                <div class="upload-thumb" aria-hidden="true">
+                  <div class="doc-line thick"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line med"></div>
+                  <div class="doc-line full"></div>
+                  <div class="doc-line short"></div>
+                  <div class="doc-line full"></div>
+                </div>
+                <button class="upload-remove" type="button" aria-label="Remove document 4">
+                  <svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bar">
+        <button class="cta cta-disabled" id="send-btn">Send Request</button>
+      </div>
+      <div class="home-indicator on-light"></div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ta = document.getElementById('detail-input');
+      const cnt = document.getElementById('char-count');
+      const btn = document.getElementById('send-btn');
+      ta.addEventListener('input', () => {
+        cnt.textContent = ta.value.length;
+        if (ta.value.trim().length > 0) {
+          btn.classList.remove('cta-disabled');
+          btn.classList.add('cta-primary');
+        } else {
+          btn.classList.add('cta-disabled');
+          btn.classList.remove('cta-primary');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
